@@ -2,3 +2,9 @@ build/
 /.gradle
 *.swp
 *.pyc
+
+*.DS_Store
+
+# Generated training data
+/input_data/left_tweets.csv
+/input_data/right_tweets.csv
