@@ -73,13 +73,17 @@ def retrieve_tweets(rel_path, pld_list, verbose=False):
     sparql = SPARQLWrapper(SPARQL_URL)
     sparql.setReturnFormat(JSON)
     sparql.setQuery(f"""
-        PREFIX schema: <http://schema.org/>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX onyx: <http://www.gsi.dit.upm.es/ontologies/onyx/ns#>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX schema: <http://schema.org/>
         PREFIX sioc: <http://rdfs.org/sioc/ns#>
         PREFIX sioc_t: <http://rdfs.org/sioc/types#>
+        PREFIX wna: <http://www.gsi.dit.upm.es/ontologies/wnaffect/ns#>
 
-        SELECT ?tweet, ?pld, ?tag, ?emotion_intensity, ?emotion_category
+        SELECT DISTINCT ?tweet,
+                        (GROUP_CONCAT(DISTINCT ?pld ; separator='+') AS ?plds),
+                        (GROUP_CONCAT(DISTINCT ?tag ; separator='+') AS ?tags),
+                        ?emotion_pos, ?emotion_neg
         WHERE {{
             ?tweet a sioc:Post ;
                 schema:citation ?url ;
@@ -93,10 +97,14 @@ def retrieve_tweets(rel_path, pld_list, verbose=False):
                 rdfs:label ?tag .
 
             ?emotion_set a onyx:EmotionSet ;
-                onyx:hasEmotion ?emotion .
-            ?emotion onyx:hasEmotionCategory ?emotion_category ;
-                onyx:hasEmotionIntensity ?emotion_intensity .
+                onyx:hasEmotion ?emotion1 ;
+                onyx:hasEmotion ?emotion2 .
+            ?emotion1 onyx:hasEmotionCategory wna:negative-emotion ;
+                onyx:hasEmotionIntensity ?emotion_neg .
+            ?emotion2 onyx:hasEmotionCategory wna:positive-emotion ;
+                onyx:hasEmotionIntensity ?emotion_pos .
         }}
+        ORDER BY ?tweet
     """)
     # FILTER(?pld IN ("telegraaf.nl", "newbostonpost.com")).
 
