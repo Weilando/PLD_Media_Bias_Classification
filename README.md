@@ -34,3 +34,5 @@ Present your solution (approach, results) to the class during the DKE2021 lectur
  * You do not need to submit the classification results of your algorithm on the training data or other data in TweetsCOV-19. Point 6 in the task description is only to make sure that you include a method to actually output your predictions in the desired format for a given input dataset, i.e. list of PLDs, so that you will be able to apply your algorithm on the test data when it is released and execute the evaluation script . While developing, you may rely on cross-validation on the training set or create your own training / test splits
  * The task is to classify PLDs, not individual tweets
 
+## Hints
+ * You might find a suspicious limit of 10,000 rows for your query results (why?). In this case, you might want to have a look at pagination
