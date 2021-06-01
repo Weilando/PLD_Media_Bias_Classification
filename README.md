@@ -13,7 +13,11 @@ A grade improvement of 0.3 is given when the following criteria are met:
 
 
 ## Topic: PLD Media Bias Classification
-The home project deals with the classification of media bias of PLDs linked in tweets. I.e. given a link to e.g. a news outlet in a tweet, is this news outlet left-biased or right-biased? For this project, we will use the tweets and their metadata for classification. 
+The home project deals with the classification of media bias of PLDs linked in tweets. I.e. given a link to e.g. a news outlet in a tweet, is this news outlet left-biased or right-biased? For this project, we will use the tweets and their metadata for classification. Other data, e.g. the textual content of linked targets, may also be used. 
+
+PLD stands for 'Pay-Level Domain': the sub-domain of a public top-level domain which is usually under control of a single user or organization as this usually is the unit one pays for to control it. 
+For example, the PLD of 'www.example.com' is 'example.com'.
+
 
 ## Timeline: 
 We will release the test set and evaluation script on **16.06., 11am** CEST time zone.  
