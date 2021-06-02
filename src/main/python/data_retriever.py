@@ -79,15 +79,14 @@ def retrieve_tweets(pld):
         PREFIX wna: <http://www.gsi.dit.upm.es/ontologies/wnaffect/ns#>
 
         SELECT DISTINCT ?pld,
-            (GROUP_CONCAT(?tmp_tags ; separator='+') AS ?tags),
-            (AVG(?emotion_pos) AS ?emotion_pos_avg),
-            (AVG(?emotion_neg) AS ?emotion_neg_avg),
             (COUNT(DISTINCT ?tweet) AS ?tweet_count),
+            (GROUP_CONCAT(?emotion_pos ; separator='+') AS ?emos_pos),
+            (GROUP_CONCAT(?emotion_neg ; separator='+') AS ?emos_neg),
+            (GROUP_CONCAT(?tmp_tags ; separator='+') AS ?tags),
             (GROUP_CONCAT(DISTINCT ?tweet ; separator='+') AS ?tweet_ids)
         WHERE {{
-            SELECT ?tweet, ?pld,
-                (GROUP_CONCAT(DISTINCT ?tag ; separator='+') AS ?tmp_tags),
-                ?emotion_pos, ?emotion_neg
+            SELECT ?pld, ?tweet, ?emotion_pos, ?emotion_neg,
+                (GROUP_CONCAT(DISTINCT ?tag ; separator='+') AS ?tmp_tags)
             WHERE {{
                 ?tweet a sioc:Post ;
                     schema:citation ?url ;
