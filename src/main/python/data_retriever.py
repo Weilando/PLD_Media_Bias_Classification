@@ -8,15 +8,11 @@ import os
 import sys
 from argparse import ArgumentParser
 from SPARQLWrapper import SPARQLWrapper, JSON
+from helpers import print_log
 
 SPARQL_URL = 'https://data.gesis.org/tweetscov19/sparql'
 
 # Helpers
-
-def print_log(message, verbose):
-    """ Prints 'message' if the 'verbose' is True. """
-    if verbose:
-        print(message)
 
 def is_valid_pld_path(rel_path):
     """ Checks if 'rel_path' exists and if its suffix is '-_train.csv'. """
