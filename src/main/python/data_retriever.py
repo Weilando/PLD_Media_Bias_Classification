@@ -3,63 +3,17 @@ Retrieves training data from the SPARQL-endpoint of TweetsCOV19.
 Example call: python -m data_retriever '../../../input_data/left_train.csv'
 """
 
-import csv
-import os
 import sys
 from argparse import ArgumentParser
 from SPARQLWrapper import SPARQLWrapper, JSON
+
+from data_file_handler import generate_tweets_path, is_valid_pld_path, \
+                              read_pld_list, write_tweets_to_csv
 from helpers import print_log
 
 SPARQL_URL = 'https://data.gesis.org/tweetscov19/sparql'
 
-# Helpers
-
-def is_valid_pld_path(rel_path):
-    """ Checks if 'rel_path' exists and if its suffix is '-_train.csv'. """
-    abs_path = os.path.join(os.getcwd(), rel_path)
-    return os.path.exists(abs_path) and abs_path.endswith('_train.csv')
-
-def generate_tweets_path(rel_path):
-    """ Generates a relative path for a CSV-file with fetched tweets.
-    'rel_path' refers to a CSV-file with names of PLDs. """
-    assert is_valid_pld_path(rel_path)
-    return rel_path.replace('_train.csv', '_tweets.csv')
-
-def write_tweets_to_csv(rel_path, tweets, header=False):
-    """ Writes 'tweets' into a CSV-file with the same relative path prefix as
-    the CSV-file which is referenced by 'rel_path'. If 'header' is True, a new
-    file is created with a header line. Otherwise, 'tweets' is appended. """
-    assert is_valid_pld_path(rel_path)
-
-    tweets_path = generate_tweets_path(rel_path)
-    with open(tweets_path, ('w' if header else 'a'), encoding='utf-8') as file:
-        fw = csv.writer(file, delimiter=',', quotechar='|',
-                        quoting=csv.QUOTE_MINIMAL)
-
-        if header:
-            fw.writerow(tweets["head"]["vars"])
-        for tweet in tweets["results"]["bindings"]:
-            fw.writerow([tweet[k]["value"] for k in tweet.keys()])
-
 # Data Retrieval
-
-def read_pld_list(rel_path, verbose=False):
-    """ Reads PLDs from a CSV-file referred to by 'rel_path'. Assumes that the
-    CSV-file contains the name of one PLD per line. """
-    assert is_valid_pld_path(rel_path)
-
-    pld_list, pld_counter = [], 0
-    csv.register_dialect('skip_space', skipinitialspace=True)
-    with open(rel_path, 'r') as file:
-        reader = csv.reader(file, dialect='skip_space')
-
-        for line in reader:
-            assert len(line)==1
-            pld_list.append(line[0])
-            pld_counter += 1
-
-    print_log(f"Read {pld_counter} PLDs from '{rel_path}'.", verbose)
-    return pld_list
 
 def retrieve_tweets(pld):
     """ Retrieves aggregated training data from the TweetsCOV19 SPARQL-endpoint

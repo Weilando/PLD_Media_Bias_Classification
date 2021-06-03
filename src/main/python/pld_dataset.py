@@ -1,4 +1,4 @@
-import torch
+from torch import is_tensor
 from torch.utils.data import Dataset
 
 class PLDDataset(Dataset):
@@ -14,7 +14,7 @@ class PLDDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
+        if is_tensor(idx):
             idx = idx.tolist()
 
         return {'label': self.labels[idx],
