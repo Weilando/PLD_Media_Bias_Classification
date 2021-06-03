@@ -2,18 +2,67 @@
 Trains a classifier for the PLDs of referenced URLs according to their
 political leaning, i.e., left or right.
 
-Example call: python -m pld_classifier_trainer '../../../input_data/left_tweets.csv' '../../../input_data/right_tweets.csv'
+Example call: python -m pld_classifier_trainer '../../../input_data/left_tweets.csv' '../../../input_data/right_tweets.csv' -b 30 -l 0.01 -e 12 -v
 """
 
+import numpy as np
 import sys
+import torch
 from argparse import ArgumentParser
+from torch.optim import Adam
+from torch.utils.data import random_split
 
 from data_file_handler import read_tweets_from_csv
 from data_preprocessor import build_vocab, build_dataloader, \
                               concatenate_arrays, generate_labels, \
                               preprocess_emos, preprocess_tags
 from helpers import print_log
+from pld_classifier import PLDClassifier, PLDClassifierParam
 from pld_dataset import PLDDataset
+
+# Trainer
+
+def build_classifier(vocab):
+    """ Builds a PLDClassifier using the pretrained embedding from 'vocab'. """
+    params = PLDClassifierParam({'hid_dim': 200})
+    return PLDClassifier(params, vocab.vectors) # vocab.vectors=embedding_weight
+
+def train_classifier(classifier, trn_ldr, val_ldr, ep=5, lr=0.01, verbose=True):
+    """ Train 'classifier' for 'ep' epochs using Adam with learning rate 'lr'.
+    Uses data from 'trn_ldr' for training and 'val_ldr' for validation. """
+    opt = Adam(classifier.parameters(), lr=lr)
+
+    for e in range(1, ep+1):
+        epoch_losses = []
+        classifier.train()
+        for labels, emos, tags, offsets in trn_ldr:
+            opt.zero_grad()
+            prediction = classifier(emos, tags, offsets)
+            loss = classifier.loss_fct(prediction, labels)
+
+            loss.backward()
+            opt.step()
+            epoch_losses.append(loss.item())
+
+        if verbose:
+            trn_loss = np.mean(epoch_losses)
+            acc = calc_val_acc(classifier, val_ldr)
+            print(f"Epoch {e:2d}: train-loss={trn_loss:.3f}, val-acc={acc:.3f}")
+
+    return classifier
+
+def calc_val_acc(classifier, val_ldr):
+    """ Calculates the validation accuracy of 'classifier' on 'val_ldr'. """
+    classifier.eval()
+    total_acc, total_count = 0, 0
+
+    with torch.no_grad():
+        for labels, emos, tags, offsets in val_ldr:
+            predited_labels = classifier(emos, tags, offsets)
+            loss = classifier.loss_fct(predited_labels, labels)
+            total_acc += (predited_labels.argmax(1) == labels).sum().item()
+            total_count += labels.size(0)
+    return total_acc / total_count
 
 # Main
 
@@ -26,8 +75,12 @@ def parse_arguments(args):
                         help="specify relative path to left training data")
     parser.add_argument('data_r',
                         help="specify relative path to right training data")
-    parser.add_argument('-b', '--batch', type=int, default=43, metavar='N',
+    parser.add_argument('-b', '--ba', type=int, default=43, metavar='N',
                         help="specify number of samples per batch")
+    parser.add_argument('-e', '--ep', type=int, default=10, metavar='N',
+                        help="specify number of epochs for training")
+    parser.add_argument('-l', '--lr', type=float, default=0.01, metavar='R',
+                        help="specify learning rate")
     parser.add_argument('-v', '--verbose', action='store_true', default=False,
                         help="activate output")
 
@@ -38,6 +91,9 @@ def parse_arguments(args):
 
 def main(args):
     parsed_args = parse_arguments(args)
+    assert parsed_args.ba > 0
+    assert parsed_args.ep > 0
+    assert parsed_args.lr > 0.0
 
     l_pld_ls, l_tweet_cnt_ls, l_emos_pos_ls, l_emos_neg_ls, l_tags_ls, _ \
         = read_tweets_from_csv(parsed_args.data_l, parsed_args.verbose)
@@ -56,12 +112,23 @@ def main(args):
     tags_str_arr = concatenate_arrays(l_tag_str_arr, r_tag_str_arr)
     pld_dataset = PLDDataset(label_arr, emos_arr, tags_str_arr)
 
-    vocab, tokenizer = build_vocab(l_tag_str_arr, r_tag_str_arr)
-    dataloader = build_dataloader(pld_dataset, parsed_args.batch, vocab,
-                                  tokenizer)
-
     print_log("Pre-processing done.", parsed_args.verbose)
 
+    val_len = parsed_args.ba * 2 # 2 batches for validation
+    trn_len = len(pld_dataset) - val_len
+    assert val_len < trn_len
+    trn_set, val_set = random_split(pld_dataset, [trn_len, val_len])
+    print_log(f"{trn_len} training samples, {val_len} validation samples",
+              parsed_args.verbose)
+
+    vocab, tokenizer = build_vocab(l_tag_str_arr, r_tag_str_arr)
+    trn_ldr = build_dataloader(trn_set, parsed_args.ba, vocab, tokenizer)
+    val_ldr = build_dataloader(val_set, parsed_args.ba, vocab, tokenizer)
+    classifier = build_classifier(vocab)
+    classifier = train_classifier(classifier, trn_ldr, val_ldr, parsed_args.ep,
+                                  parsed_args.lr, parsed_args.verbose)
+    torch.save(classifier, 'classifier.pt')
+    print_log("Classifier trained and saved.", parsed_args.verbose)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
