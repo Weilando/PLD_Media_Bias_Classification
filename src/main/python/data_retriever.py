@@ -96,8 +96,8 @@ def retrieve_tweets(pld):
                     "/.*", "") as ?pld) .
                 FILTER(?pld=\"{pld}\") .
 
-                ?mention a sioc_t:Tag ;
-                    rdfs:label ?tag .
+                OPTIONAL {{?mention a sioc_t:Tag ;
+                    rdfs:label ?tag }} .
 
                 ?emotion_set a onyx:EmotionSet ;
                     onyx:hasEmotion ?emotion1 ;
