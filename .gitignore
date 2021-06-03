@@ -5,6 +5,7 @@ build/
 
 *.DS_Store
 
-# Generated training data
+# Generated training data and pretrained word embeddings
+*.vector_cache
 /input_data/left_tweets.csv
 /input_data/right_tweets.csv
