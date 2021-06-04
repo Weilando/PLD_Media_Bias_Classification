@@ -1,7 +1,8 @@
 # DOCUMENTATION
 
 [Data Retrieval](#data) describes how the training data can be generated using `data_retriever.py`.
-[Machine Learning Algorithm](#algo) describes applied features, the algorithm itself, as well as its training and application.
+[Machine Learning Algorithm](#algo) describes applied features, the algorithm itself, as well as its [Training](#train) and [Application](#app).
+`pld_classifier_trainer.py` trains a new instance, whereas `evaluation.py` performs an evaluation using unlabeled data.
 
 ## <a id="data">Data Retrieval</a>
 
@@ -45,10 +46,14 @@ Please notice that the implementation uses an `torch.nn.EmbeddingBag`, which tak
 As there is one offset per sample from the batch, there is no need for zero padding.
 This layer has some additional features regarding efficiency.
 
+#### <a id="train">Training</a>
+
 Two batches from the training data are reserved for validation.
 `pld_classifier_trainer.py` can be used to train a classifier with the Adam optimizer and previously retrieved training data.
-It saves the final classifier as PyTorch file.
+It saves the `state_dict` final classifier and the applied `Vocab` as PyTorch files.
+
+#### <a id="app">Application</a>
 
 The classifier can be called like a python function and accepts either a single sample or a complete batch.
-Thus, the input data needs to be have the same form as the training data.
+Thus, the input data needs to be have the same form as the training data and needs to use the same `Vocab` object to produce word vectors.
 A call might be `pld_classifier(emos, tags_vec, offsets)`, where `emos` holds both emotion values, `tags_vec` is an encoded vector for all hashtags and `offsets` contains the offsets of hashtags from single tweets.

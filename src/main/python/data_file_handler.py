@@ -76,3 +76,18 @@ def write_tweets_to_csv(rel_path, tweets, header=False):
             fw.writerow(tweets["head"]["vars"])
         for tweet in tweets["results"]["bindings"]:
             fw.writerow([tweet[k]["value"] for k in tweet.keys()])
+
+def write_results_to_csv(plds, class_ls, confidenc_ls, rel_path_l, rel_path_r):
+    """ Writes names from 'plds' and the corresponding confidences from
+    'confidence_ls' to CSV-files whose relative paths are given by 'rel_path_l'
+    and 'rel_path_r'. PLDs from class 0 are written into 'rel_path_l', those
+    with class 1 are written to 'rel_path_r'. """
+    with open(rel_path_l, 'w', encoding='utf-8') as file_l, \
+        open(rel_path_r, 'w', encoding='utf-8') as file_r:
+        fw_l = csv.writer(file_l, delimiter=',', quotechar='|',
+                          quoting=csv.QUOTE_MINIMAL)
+        fw_r = csv.writer(file_r, delimiter=',', quotechar='|',
+                          quoting=csv.QUOTE_MINIMAL)
+
+        for pld, cls, cnf in zip(plds, class_ls, confidenc_ls):
+            (fw_l if (cls==0) else fw_r).writerow([pld, cnf])

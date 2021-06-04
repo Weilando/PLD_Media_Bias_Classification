@@ -21,9 +21,9 @@ from pld_dataset import PLDDataset, build_label_arr, build_emos_arr, \
 # Trainer
 
 def build_classifier(vocab):
-    """ Builds a PLDClassifier using the pretrained embedding from 'vocab'. """
-    params = PLDClassifierParam({'hid_dim': 200})
-    return PLDClassifier(params, vocab.vectors) # vocab.vectors=embedding_weight
+    """ Builds a PLDClassifier with pretrained embedding from 'vocab'. """
+    param = PLDClassifierParam() # standard parameter
+    return PLDClassifier(param, embedding_weight=vocab.vectors)
 
 def train_classifier(classifier, trn_ldr, val_ldr, ep=5, lr=0.01, verbose=True):
     """ Train 'classifier' for 'ep' epochs using Adam with learning rate 'lr'.
@@ -116,8 +116,9 @@ def main(args):
     classifier = build_classifier(vocab)
     classifier = train_classifier(classifier, trn_ldr, val_ldr, parsed_args.ep,
                                   parsed_args.lr, parsed_args.verbose)
-    torch.save(classifier, f"{parsed_args.model_name}.pt")
-    print_log("Classifier trained and saved.", parsed_args.verbose)
+    torch.save(classifier.state_dict(), f"{parsed_args.model_name}.pt")
+    torch.save(vocab, f"{parsed_args.model_name}_vocab.pt")
+    print_log("Classifier trained. State and vocab saved.", parsed_args.verbose)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
