@@ -40,14 +40,15 @@ def retrieve_tweets(pld):
             WHERE {{
                 ?tweet a sioc:Post ;
                     schema:citation ?url ;
-                    schema:mentions ?mention ;
                     onyx:hasEmotionSet ?emotion_set .
                 BIND(REPLACE( REPLACE(STR(?url), "https?://(www.)?", ""),
                     "/.*", "") as ?pld) .
                 FILTER(?pld=\"{pld}\") .
 
-                OPTIONAL {{?mention a sioc_t:Tag ;
-                    rdfs:label ?tag }} .
+                OPTIONAL {{
+                    ?tweet schema:mentions ?mention .
+                    ?mention a sioc_t:Tag ;
+                        rdfs:label ?tag }} .
 
                 ?emotion_set a onyx:EmotionSet ;
                     onyx:hasEmotion ?emotion1 ;
