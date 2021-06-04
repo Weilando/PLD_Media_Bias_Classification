@@ -5,15 +5,13 @@ from torchtext.data.utils import get_tokenizer
 from torch.utils.data import DataLoader
 from torchtext.vocab import Vocab
 
-def build_vocab(l_tag_str_arr, r_tag_str_arr):
-    """ Builds vocab for all tokens in 'l_tag_str_arr' and 'r_tag_str_arr'. """
+def build_vocab(tags_str_arr):
+    """ Builds vocab for all tokens in 'tags_str_arr'. """
     tokenizer = get_tokenizer('basic_english')
     counter = Counter()
 
-    for tag_str in l_tag_str_arr:
-        counter.update(tokenizer(tag_str))
-    for tag_str in r_tag_str_arr:
-        counter.update(tokenizer(tag_str))
+    for tags_str in tags_str_arr:
+        counter.update(tokenizer(tags_str))
 
     return Vocab(counter, min_freq=1, vectors='fasttext.simple.300d'), tokenizer
 
