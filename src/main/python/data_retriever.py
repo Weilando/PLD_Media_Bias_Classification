@@ -7,8 +7,7 @@ import sys
 from argparse import ArgumentParser
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-from data_file_handler import generate_tweets_path, is_valid_pld_path, \
-                              read_pld_list, write_tweets_to_csv
+from data_file_handler import read_pld_list, write_tweets_to_csv
 from helpers import print_log
 
 SPARQL_URL = 'https://data.gesis.org/tweetscov19/sparql'

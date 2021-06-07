@@ -43,7 +43,7 @@ def read_tweets_from_csv(rel_path, verbose=False):
     emos_pos_ls, emos_neg_ls, tags_ls, tweet_ids_ls = [], [], [], []
 
     csv.register_dialect('skip_space', skipinitialspace=True)
-    csv.field_size_limit(250000)
+    csv.field_size_limit(600000)
     with open(rel_path, 'r') as f:
         reader = csv.DictReader(f , delimiter=',', dialect='skip_space')
 

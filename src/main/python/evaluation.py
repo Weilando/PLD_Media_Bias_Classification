@@ -11,13 +11,10 @@ import sys
 import torch
 from argparse import ArgumentParser
 from torchtext.data.utils import get_tokenizer
-from torch.nn.functional import softmax
 
 from data_file_handler import read_tweets_from_csv, write_results_to_csv
-from data_preprocessor import build_vocab, build_dataloader, preprocess_emos, \
-                              preprocess_tags
+from data_preprocessor import build_dataloader, preprocess_emos, preprocess_tags
 from helpers import print_log
-from pld_classifier import PLDClassifier, PLDClassifierParam
 from pld_classifier_trainer import build_classifier
 from pld_dataset import PLDDataset
 
@@ -27,7 +24,7 @@ def apply_classifier(classifier, test_ldr):
     predictions = []
     classifier.eval()
     for _, emos, tags, offsets in test_ldr:
-        predictions += classifier(emos, tags, offsets).tolist()
+        predictions += classifier(emos, tags, offsets, probs=True).tolist()
     return predictions
 
 def evaluate_predictions(predictions):
