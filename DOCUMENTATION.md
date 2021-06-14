@@ -51,7 +51,7 @@ This layer has some additional features regarding efficiency.
 
 Two batches from the training data are reserved for validation.
 `pld_classifier_trainer.py` can be used to train a classifier with the Adam optimizer and previously retrieved training data.
-It saves the `state_dict` final classifier and the applied `Vocab` as PyTorch files.
+It saves the `state_dict` of the final classifier and the applied `Vocab` as PyTorch files, and the accuracies and losses per epoch on the training and validation set as NPZ-file.
 
 #### <a id="app">Application</a>
 

@@ -1,7 +1,10 @@
 import csv
 import os
+import torch
+import numpy as np
 
 from helpers import print_log
+from pld_classifier import build_classifier
 
 # Helper
 
@@ -11,12 +14,37 @@ def generate_tweets_path(rel_path):
     assert is_valid_pld_path(rel_path)
     return rel_path.replace('_train.csv', '_tweets.csv')
 
+def generate_model_file_names(model_name):
+    """ Generates the PT-file names for the state_dict and vocab from
+    'model_name'. """
+    return f"{model_name}.pt", f"{model_name}_vocab.pt"
+
+def generate_hists_file_name(model_name):
+    """ Generates the NPZ-file name for the train-metrics from 'model_name'. """
+    return f"{model_name}_hists.npz"
+
 def is_valid_pld_path(rel_path):
     """ Checks if 'rel_path' exists and if its suffix is '-_train.csv'. """
     abs_path = os.path.join(os.getcwd(), rel_path)
     return os.path.exists(abs_path) and abs_path.endswith('_train.csv')
 
 # Reader
+
+def read_hists_from_file(model_name):
+    """ Reads data from a NPZ-file referred to by 'rel_path'. Returns np.arrays
+    of metrics which have been generated during training. """
+    hists_file_name = generate_hists_file_name(model_name)
+    hists_file = np.load(hists_file_name)
+    return hists_file['trn_hist'], hists_file['val_hist']
+
+def read_model_from_files(model_name):
+    """ Reads state_dict for 'classifier' and 'vocab' from PT-files. Returns
+    the built classifier and vocab. """
+    model_file_name, vocab_file_name = generate_model_file_names(model_name)
+    vocab = torch.load(vocab_file_name)
+    classifier = build_classifier(vocab)
+    classifier.load_state_dict(torch.load(model_file_name))
+    return classifier, vocab
 
 def read_pld_list(rel_path, verbose=False):
     """ Reads PLDs from a CSV-file referred to by 'rel_path'. Assumes that the
@@ -61,21 +89,16 @@ def read_tweets_from_csv(rel_path, verbose=False):
 
 # Writer
 
-def write_tweets_to_csv(rel_path, tweets, header=False):
-    """ Writes 'tweets' into a CSV-file with the same relative path prefix as
-    the CSV-file which is referenced by 'rel_path'. If 'header' is True, a new
-    file is created with a header line. Otherwise, 'tweets' is appended. """
-    assert is_valid_pld_path(rel_path)
+def write_hists_to_file(model_name, trn_hist, val_hist):
+    """ Writes 'trn_hist' and 'val_hist' for 'model_name' into a NPZ-file. """
+    hists_file_name = generate_hists_file_name(model_name)
+    np.savez(hists_file_name, trn_hist=trn_hist, val_hist=val_hist)
 
-    tweets_path = generate_tweets_path(rel_path)
-    with open(tweets_path, ('w' if header else 'a'), encoding='utf-8') as file:
-        fw = csv.writer(file, delimiter=',', quotechar='|',
-                        quoting=csv.QUOTE_MINIMAL)
-
-        if header:
-            fw.writerow(tweets["head"]["vars"])
-        for tweet in tweets["results"]["bindings"]:
-            fw.writerow([tweet[k]["value"] for k in tweet.keys()])
+def write_model_to_files(model_name, classifier, vocab):
+    """ Writes state_dict for 'classifier' and 'vocab' into PT-files. """
+    model_file_name, vocab_file_name = generate_model_file_names(model_name)
+    torch.save(classifier.state_dict(), model_file_name)
+    torch.save(vocab, vocab_file_name)
 
 def write_results_to_csv(plds, class_ls, confidenc_ls, rel_path_l, rel_path_r):
     """ Writes names from 'plds' and the corresponding confidences from
@@ -91,3 +114,19 @@ def write_results_to_csv(plds, class_ls, confidenc_ls, rel_path_l, rel_path_r):
 
         for pld, cls, cnf in zip(plds, class_ls, confidenc_ls):
             (fw_l if (cls==0) else fw_r).writerow([pld, cnf])
+
+def write_tweets_to_csv(rel_path, tweets, header=False):
+    """ Writes 'tweets' into a CSV-file with the same relative path prefix as
+    the CSV-file which is referenced by 'rel_path'. If 'header' is True, a new
+    file is created with a header line. Otherwise, 'tweets' is appended. """
+    assert is_valid_pld_path(rel_path)
+
+    tweets_path = generate_tweets_path(rel_path)
+    with open(tweets_path, ('w' if header else 'a'), encoding='utf-8') as file:
+        fw = csv.writer(file, delimiter=',', quotechar='|',
+                        quoting=csv.QUOTE_MINIMAL)
+
+        if header:
+            fw.writerow(tweets["head"]["vars"])
+        for tweet in tweets["results"]["bindings"]:
+            fw.writerow([tweet[k]["value"] for k in tweet.keys()])

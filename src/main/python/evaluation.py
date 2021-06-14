@@ -12,10 +12,10 @@ import torch
 from argparse import ArgumentParser
 from torchtext.data.utils import get_tokenizer
 
-from data_file_handler import read_tweets_from_csv, write_results_to_csv
+from data_file_handler import read_hists_from_file, read_tweets_from_csv, \
+                              read_model_from_files, write_results_to_csv
 from data_preprocessor import build_dataloader, preprocess_emos, preprocess_tags
-from helpers import print_log
-from pld_classifier_trainer import build_classifier
+from helpers import plot_acc_and_loss, print_log
 from pld_dataset import PLDDataset
 
 def apply_classifier(classifier, test_ldr):
@@ -44,6 +44,8 @@ def parse_arguments(args):
     parser.add_argument('data', help="specify relative path to test data")
     parser.add_argument('res_l', help="specify relative path to left results")
     parser.add_argument('res_r', help="specify relative path to right results")
+    parser.add_argument('-p', '--plot', action='store_true', default=False,
+                        help="plot evaluation metrics from training")
     parser.add_argument('-v', '--verbose', action='store_true', default=False,
                         help="activate output")
 
@@ -56,9 +58,7 @@ def main(args):
     parsed_args = parse_arguments(args)
 
     tokenizer = get_tokenizer('basic_english')
-    vocab = torch.load(f"{parsed_args.cls}_vocab.pt")
-    classifier = build_classifier(vocab)
-    classifier.load_state_dict(torch.load(f"{parsed_args.cls}.pt"))
+    classifier, vocab = read_model_from_files(parsed_args.cls)
     print_log("Classifier and vocab loaded.", parsed_args.verbose)
 
     pld_ls, _, emos_pos_ls, emos_neg_ls, tags_ls, _ \
@@ -78,6 +78,10 @@ def main(args):
     write_results_to_csv(pld_ls, class_ls, confidence_ls, parsed_args.res_l,
                          parsed_args.res_r)
     print_log("Evaluation done and results saved.", parsed_args.verbose)
+
+    if parsed_args.plot:
+        trn_hist, val_hist = read_hists_from_file(parsed_args.cls)
+        plot_acc_and_loss(trn_hist, val_hist)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

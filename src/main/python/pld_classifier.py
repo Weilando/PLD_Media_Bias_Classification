@@ -2,6 +2,11 @@ from torch import cat
 from torch.nn import CrossEntropyLoss, EmbeddingBag, Linear, Module
 from torch.nn.functional import relu, softmax
 
+def build_classifier(vocab):
+    """ Builds a PLDClassifier with pretrained embedding from 'vocab'. """
+    param = PLDClassifierParam() # standard parameter
+    return PLDClassifier(param, embedding_weight=vocab.vectors)
+
 class PLDClassifierParam(object):
     """ Defines parameters for the initialization of a PLDClassifier. """
     def __init__(self, param_dict: dict = dict()):

@@ -10,5 +10,6 @@ build/
 /input_data/left_tweets.csv
 /input_data/right_tweets.csv
 
-# Saved PyTorch models
+# Saved PyTorch models and training metrics
 *.pt
+*.npz

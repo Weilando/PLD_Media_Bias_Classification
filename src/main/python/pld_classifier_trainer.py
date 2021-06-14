@@ -11,56 +11,63 @@ import torch
 from argparse import ArgumentParser
 from torch.optim import Adam
 
-from data_file_handler import read_tweets_from_csv
+from data_file_handler import read_tweets_from_csv, write_hists_to_file, \
+                              write_model_to_files
 from data_preprocessor import build_vocab, build_dataloader
-from helpers import print_log
-from pld_classifier import PLDClassifier, PLDClassifierParam
+from helpers import print_log, gen_stat_msg, plot_acc_and_loss
+from pld_classifier import build_classifier
 from pld_dataset import PLDDataset, build_label_arr, build_emos_arr, \
                         build_tags_str_arr, split_dataset
 
 # Trainer
 
-def build_classifier(vocab):
-    """ Builds a PLDClassifier with pretrained embedding from 'vocab'. """
-    param = PLDClassifierParam() # standard parameter
-    return PLDClassifier(param, embedding_weight=vocab.vectors)
-
 def train_classifier(classifier, trn_ldr, val_ldr, ep=5, lr=0.01, verbose=True):
-    """ Train 'classifier' for 'ep' epochs using Adam with learning rate 'lr'.
-    Uses data from 'trn_ldr' for training and 'val_ldr' for validation. """
+    """ Trains 'classifier' for 'ep' epochs using Adam with learning rate 'lr'.
+    Uses data from 'trn_ldr' for training and 'val_ldr' for validation. Returns
+    the trained 'classifier' and evaluation metrics from training. """
     opt = Adam(classifier.parameters(), lr=lr)
+    trn_hist, val_hist = [], [] # save tuples (accuracy, loss)
 
     for e in range(1, ep+1):
+        total_ok, total_count = 0, 0
         epoch_losses = []
         classifier.train()
         for labels, emos, tags, offsets in trn_ldr:
+            # forward pass
             opt.zero_grad()
-            prediction = classifier(emos, tags, offsets)
-            loss = classifier.loss_fct(prediction, labels)
+            predicted_labels = classifier(emos, tags, offsets)
+            loss = classifier.loss_fct(predicted_labels, labels)
 
+            # backward pass
             loss.backward()
             opt.step()
+
+            # evaluation metrics
             epoch_losses.append(loss.item())
+            total_ok += (predicted_labels.argmax(1) == labels).sum().item()
+            total_count += labels.size(0)
 
-        if verbose:
-            trn_loss = np.mean(epoch_losses)
-            acc = calc_val_acc(classifier, val_ldr)
-            print(f"Epoch {e:2d}: train-loss={trn_loss:.3f}, val-acc={acc:.3f}")
+        trn_hist.append((total_ok / total_count, np.mean(epoch_losses)))
+        val_hist.append(calc_acc_and_loss(classifier, val_ldr))
+        print_log(gen_stat_msg(e, trn_hist, val_hist), verbose)
 
-    return classifier
+    return classifier, np.array(trn_hist), np.array(val_hist)
 
-def calc_val_acc(classifier, val_ldr):
-    """ Calculates the validation accuracy of 'classifier' on 'val_ldr'. """
+def calc_acc_and_loss(classifier, ldr):
+    """ Calculates the accuracy and loss of 'classifier' on 'ldr'. """
     classifier.eval()
-    total_acc, total_count = 0, 0
+    total_ok, total_count = 0, 0
+    losses = []
 
     with torch.no_grad():
-        for labels, emos, tags, offsets in val_ldr:
-            predited_labels = classifier(emos, tags, offsets)
-            loss = classifier.loss_fct(predited_labels, labels)
-            total_acc += (predited_labels.argmax(1) == labels).sum().item()
+        for labels, emos, tags, offsets in ldr:
+            predicted_labels = classifier(emos, tags, offsets)
+            losses.append(classifier.loss_fct(predicted_labels, labels))
+            # count correct classifications and samples
+            total_ok += (predicted_labels.argmax(1) == labels).sum().item()
             total_count += labels.size(0)
-    return total_acc / total_count
+
+    return total_ok / total_count, np.mean(losses) # return acc and loss
 
 # Main
 
@@ -114,11 +121,14 @@ def main(args):
     val_ldr = build_dataloader(val_set, parsed_args.ba, vocab, tokenizer)
 
     classifier = build_classifier(vocab)
-    classifier = train_classifier(classifier, trn_ldr, val_ldr, parsed_args.ep,
-                                  parsed_args.lr, parsed_args.verbose)
-    torch.save(classifier.state_dict(), f"{parsed_args.model_name}.pt")
-    torch.save(vocab, f"{parsed_args.model_name}_vocab.pt")
+    classifier, trn_hist, val_hist = train_classifier(classifier, trn_ldr,
+                                        val_ldr, parsed_args.ep,
+                                        parsed_args.lr, parsed_args.verbose)
+    write_model_to_files(parsed_args.model_name, classifier, vocab)
+    write_hists_to_file(parsed_args.model_name, trn_hist, val_hist)
     print_log("Classifier trained. State and vocab saved.", parsed_args.verbose)
+    if parsed_args.verbose:
+        plot_acc_and_loss(trn_hist, val_hist)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
