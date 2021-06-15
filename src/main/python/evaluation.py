@@ -14,7 +14,8 @@ from torchtext.data.utils import get_tokenizer
 
 from data_file_handler import read_hists_from_file, read_tweets_from_csv, \
                               read_model_from_files, write_results_to_csv
-from data_preprocessor import build_dataloader, preprocess_emos, preprocess_tags
+from data_preprocessor import append_cnts_to_emos, build_dataloader, \
+                              preprocess_cnts, preprocess_emos, preprocess_tags
 from helpers import plot_acc_and_loss, print_log
 from pld_dataset import PLDDataset
 
@@ -61,12 +62,13 @@ def main(args):
     classifier, vocab = read_model_from_files(parsed_args.cls)
     print_log("Classifier and vocab loaded.", parsed_args.verbose)
 
-    pld_ls, _, emos_pos_ls, emos_neg_ls, tags_ls, _ \
+    pld_ls, cnts_ls, emos_pos_ls, emos_neg_ls, tags_ls, _ \
         = read_tweets_from_csv(parsed_args.data, parsed_args.verbose)
 
     # labels are not present for testing, set them to -1
     label_arr = np.full_like(pld_ls, fill_value=-1, dtype=int).tolist()
-    emos_arr = preprocess_emos(emos_pos_ls, emos_neg_ls)
+    emos_arr = append_cnts_to_emos(preprocess_emos(emos_pos_ls, emos_neg_ls),
+                                   preprocess_cnts(cnts_ls))
     tags_str_arr = preprocess_tags(tags_ls)
 
     pld_testset = PLDDataset(label_arr, emos_arr, tags_str_arr)

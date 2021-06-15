@@ -20,7 +20,7 @@ class PLDClassifier(Module):
         super().__init__()
 
         self.emb = EmbeddingBag.from_pretrained(embedding_weight)
-        self.hid = Linear(params.emb_dim + 4, params.hid_dim) # +4 for emos
+        self.hid = Linear(params.emb_dim + 5, params.hid_dim) # +5 for emos
         self.out = Linear(params.hid_dim, params.num_classes)
 
         self.loss_fct = CrossEntropyLoss()

@@ -5,6 +5,10 @@ from torchtext.data.utils import get_tokenizer
 from torch.utils.data import DataLoader
 from torchtext.vocab import Vocab
 
+def append_cnts_to_emos(emos_arr, cnts_arr):
+    """ Appends 'cnts_arr' as new column to 'emos_arr'. """
+    return np.hstack((emos_arr, cnts_arr.reshape(-1, 1))) # concat rows
+
 def build_vocab(tags_str_arr):
     """ Builds vocab for all tokens in 'tags_str_arr'. """
     tokenizer = get_tokenizer('basic_english')
@@ -40,13 +44,21 @@ def build_dataloader(pld_dataset, batch_size, vocab, tokenizer):
     return DataLoader(pld_dataset, batch_size=batch_size, num_workers=0,
                       shuffle=False, drop_last=False, collate_fn=collate_batch)
 
-def concatenate_arrays(left_arr, right_arr):
-    """ Concatenate 'left_arr' and 'right_arr' to get one feature array. """
+def concatenate_colums(left_arr, right_arr):
+    """ Concatenates 'left_arr' and 'right_arr' to get one feature array. """
     return np.concatenate((left_arr, right_arr), axis=0)
 
 def generate_labels(num, left=True):
     """ Generates 'num' labels. If 'left' is True, each label is 0, else 1. """
     return np.zeros(num, dtype=int) if left else np.ones(num, dtype=int)
+
+def preprocess_cnts(cnts_str_ls):
+    """ Parses ints from strings in 'cnts_str_ls' and normalizes the whole list.
+    Returns a np.array with one normalized float per PLD. """
+    cnts_ls = np.array([int(cnts_str) for cnts_str in cnts_str_ls])
+    max = np.max(cnts_ls)
+    min = np.min(cnts_ls)
+    return (cnts_ls - min) / (max - min) # normalization using broadcasting
 
 def preprocess_emos(emos_pos_str_ls, emos_neg_str_ls):
     """ Parses lists of floats from strings in 'emos_pos_str_ls' and

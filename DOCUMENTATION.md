@@ -32,9 +32,10 @@ Please notice that both values are greater than zero for some tweets.
 ### Features
 
 The algorithm considers two classes of features across all relevant tweets **per PLD**.
-On the one hand, it uses separate arithmetic means and standard deviations per emotion score, i.e., positive and negative emotions.
+On the one hand, it uses separate _arithmetic means and standard deviations per emotion score_, i.e., positive and negative emotions.
+Additionally, _normalized counters_ of all aggregated tweets per PLD are taken into account.
 These features are represented as floats in one tensor `emos`.
-On the other hand, all hashtags from related tweets are taken into account to approximate the PLDs main topics.
+On the other hand, all _hashtags_ from related tweets are taken into account to approximate the PLDs main topics.
 The hashtags `tags` are concatenated strings and need to be transformed into word vectors for training.
 
 ### Algorithm

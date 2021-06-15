@@ -16,7 +16,7 @@ from data_file_handler import read_tweets_from_csv, write_hists_to_file, \
 from data_preprocessor import build_vocab, build_dataloader
 from helpers import print_log, gen_stat_msg, plot_acc_and_loss
 from pld_classifier import build_classifier
-from pld_dataset import PLDDataset, build_label_arr, build_emos_arr, \
+from pld_dataset import PLDDataset, build_emos_arr, build_label_arr, \
                         build_tags_str_arr, split_dataset
 
 # Trainer
@@ -101,14 +101,14 @@ def main(args):
     assert parsed_args.ep > 0
     assert parsed_args.lr > 0.0
 
-    l_pld_ls, _, l_emos_pos_ls, l_emos_neg_ls, l_tags_ls, _ \
+    l_pld_ls, l_cnts, l_emos_pos_ls, l_emos_neg_ls, l_tags_ls, _ \
         = read_tweets_from_csv(parsed_args.data_l, parsed_args.verbose)
-    r_pld_ls, _, r_emos_pos_ls, r_emos_neg_ls, r_tags_ls, _ \
+    r_pld_ls, r_cnts, r_emos_pos_ls, r_emos_neg_ls, r_tags_ls, _ \
         = read_tweets_from_csv(parsed_args.data_r, parsed_args.verbose)
 
     label_arr = build_label_arr(len(l_pld_ls), len(r_pld_ls))
     emos_arr = build_emos_arr(l_emos_pos_ls, l_emos_neg_ls,
-                              r_emos_pos_ls, r_emos_neg_ls)
+                              r_emos_pos_ls, r_emos_neg_ls, l_cnts, r_cnts)
     tags_str_arr = build_tags_str_arr(l_tags_ls, r_tags_ls)
 
     pld_dataset = PLDDataset(label_arr, emos_arr, tags_str_arr)
