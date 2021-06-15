@@ -50,8 +50,8 @@ def generate_labels(num, left=True):
 
 def preprocess_emos(emos_pos_str_ls, emos_neg_str_ls):
     """ Parses lists of floats from strings in 'emos_pos_str_ls' and
-    'emos_neg_str_ls', calculates an average per list and returns them as
-    np.array. """
+    'emos_neg_str_ls', calculates the arithmetic mean and standard deviation
+    per list and returns them as np.array. """
     parse_emos_str = lambda emos_str: list(map(float, emos_str.split('+')))
 
     emos_pos_ls_ls = [parse_emos_str(emos_str) for emos_str in emos_pos_str_ls]
@@ -59,8 +59,11 @@ def preprocess_emos(emos_pos_str_ls, emos_neg_str_ls):
 
     emos_pos_avg_ls = [np.mean(emos_ls) for emos_ls in emos_pos_ls_ls]
     emos_neg_avg_ls = [np.mean(emos_ls) for emos_ls in emos_neg_ls_ls]
+    emos_pos_std_ls = [np.std(emos_ls) for emos_ls in emos_pos_ls_ls]
+    emos_neg_std_ls = [np.std(emos_ls) for emos_ls in emos_neg_ls_ls]
 
-    return np.array([emos_pos_avg_ls, emos_neg_avg_ls]).T
+    return np.array([emos_pos_avg_ls, emos_neg_avg_ls, emos_pos_std_ls,
+                     emos_neg_std_ls]).T
 
 def preprocess_tags(tags):
     """ Replaces separator '+' with spaces in and lower cases strings from

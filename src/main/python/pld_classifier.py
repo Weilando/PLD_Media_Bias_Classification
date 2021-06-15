@@ -1,6 +1,6 @@
 from torch import cat
 from torch.nn import CrossEntropyLoss, EmbeddingBag, Linear, Module
-from torch.nn.functional import relu, softmax
+from torch.nn.functional import leaky_relu, softmax
 
 def build_classifier(vocab):
     """ Builds a PLDClassifier with pretrained embedding from 'vocab'. """
@@ -20,7 +20,7 @@ class PLDClassifier(Module):
         super().__init__()
 
         self.emb = EmbeddingBag.from_pretrained(embedding_weight)
-        self.hid = Linear(params.emb_dim + 2, params.hid_dim) # +2 for emos
+        self.hid = Linear(params.emb_dim + 4, params.hid_dim) # +4 for emos
         self.out = Linear(params.hid_dim, params.num_classes)
 
         self.loss_fct = CrossEntropyLoss()
@@ -30,9 +30,9 @@ class PLDClassifier(Module):
         probabilities via Softmax function if 'probs' is True. """
         # BS = batch size, ES = number of emotion scores
         tags_feats = self.emb(tags_vec, offsets)    # (BS, emb_dim)
-        tags_feats = relu(tags_feats)               # (BS, emb_dim)
+        tags_feats = leaky_relu(tags_feats)         # (BS, emb_dim)
         concat_feats = cat((tags_feats, emos), 1)   # (BS, emb_dim + ES)
         concat_feats = self.hid(concat_feats)       # (BS, hid_dim)
-        concat_feats = relu(concat_feats)           # (BS, hid_dim)
+        concat_feats = leaky_relu(concat_feats)     # (BS, hid_dim)
         concat_feats = self.out(concat_feats)       # (num_classes)
         return softmax(concat_feats, dim=1) if probs else concat_feats

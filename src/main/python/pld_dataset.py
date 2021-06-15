@@ -32,9 +32,9 @@ def build_label_arr(l_len, r_len):
     return concatenate_arrays(l_label_arr, r_label_arr)
 
 def build_emos_arr(l_emos_pos_ls, l_emos_neg_ls, r_emos_pos_ls, r_emos_neg_ls):
-    """ Preprocesses the input lists which are read from a CSV-file and builds
-    one array [pos, neg], where pos and neg are concatenations of averages for
-    all left and right emotion scores per PLD. """
+    """ Preprocesses the input lists from a CSV-file and builds one array
+    [pos_avg, neg_avg, pos_std, neg_std] one arithmetic mean and standard
+    deviation for all left and right emotion scores per PLD. """
     l_emos_arr = preprocess_emos(l_emos_pos_ls, l_emos_neg_ls)
     r_emos_arr = preprocess_emos(r_emos_pos_ls, r_emos_neg_ls)
     return concatenate_arrays(l_emos_arr, r_emos_arr)

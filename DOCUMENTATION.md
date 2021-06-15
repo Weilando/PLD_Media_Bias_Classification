@@ -24,16 +24,16 @@ Hashtags are not distinct, i.e., they are listed as often as they occur in the c
 Please notice that some tweets do not contain hashtags and `tags` is completely empty for some PLDs.
 
 The knowledge base stores an emotion set containing negative and positive scores for each tweet.
-`emotion_pos_avg` and `emotion_pos_avg` are floats between 0 (weak) and 1 (strong).
+`emos_pos` and `emos_neg` are floats between 0 (weak) and 1 (strong).
 Please notice that both values are greater than zero for some tweets.
 
 ## <a id="algo">Machine Learning Algorithm</a>
 
 ### Features
 
-The algorithm considers two classes of features per PLD.
-On the one hand, it uses positive and negative emotion scores by taking one average for each over all relevant tweets.
-The averages are represented as floats in one tensor `emos`.
+The algorithm considers two classes of features across all relevant tweets **per PLD**.
+On the one hand, it uses separate arithmetic means and standard deviations per emotion score, i.e., positive and negative emotions.
+These features are represented as floats in one tensor `emos`.
 On the other hand, all hashtags from related tweets are taken into account to approximate the PLDs main topics.
 The hashtags `tags` are concatenated strings and need to be transformed into word vectors for training.
 
