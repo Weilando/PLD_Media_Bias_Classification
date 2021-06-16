@@ -47,35 +47,59 @@ public class Eval {
 	}
 
 	public int getTruePositives() {
-		return this.generated_leftPlds.stream()
+		int sum_left = this.generated_leftPlds.stream()
 			.filter(pld -> this.gold_leftPlds.contains(pld))
 			.map(pld -> 1)
 			.mapToInt(x -> x)
 			.sum();
+		int sum_right = this.generated_rightPlds.stream()
+			.filter(pld -> this.gold_rightPlds.contains(pld))
+			.map(pld -> 1)
+			.mapToInt(x -> x)
+			.sum();
+		return sum_left + sum_right;
 	}
 
 	public int getFalsePositives() {
-		return this.generated_leftPlds.stream()
-			.filter(pld -> this.gold_rightPlds.contains(pld))
+		 int sum_left = this.generated_leftPlds.stream()
+			.filter(pld -> !this.gold_leftPlds.contains(pld))
 			.map(pld -> 1)
 			.mapToInt(x -> x)
 			.sum();
+		 int sum_right = this.generated_rightPlds.stream()
+			.filter(pld -> !this.gold_rightPlds.contains(pld))
+			.map(pld -> 1)
+			.mapToInt(x -> x)
+			.sum();
+		 return sum_left + sum_right;
 	}
 
 	public int getTrueNegatives() {
-		return this.generated_rightPlds.stream()
-			.filter(pld -> this.gold_rightPlds.contains(pld))
+		int sum_left = this.gold_rightPlds.stream()
+			.filter(pld -> !this.generated_leftPlds.contains(pld))
 			.map(pld -> 1)
 			.mapToInt(x -> x)
 			.sum();
+		int sum_right = this.gold_leftPlds.stream()
+			.filter(pld -> !this.generated_rightPlds.contains(pld))
+			.map(pld -> 1)
+			.mapToInt(x -> x)
+			.sum();
+		return sum_left + sum_right;
 	}
 
 	public int getFalseNegatives() {
-		return this.generated_rightPlds.stream()
-			.filter(pld -> this.gold_leftPlds.contains(pld))
+		int sum_left = this.gold_rightPlds.stream()
+			.filter(pld -> !this.generated_rightPlds.contains(pld))
 			.map(pld -> 1)
 			.mapToInt(x -> x)
 			.sum();
+		int sum_right = this.gold_leftPlds.stream()
+			.filter(pld -> !this.generated_leftPlds.contains(pld))
+			.map(pld -> 1)
+			.mapToInt(x -> x)
+			.sum();
+		return sum_left + sum_right;
 	}
 
         public static void main(String[] args) throws IOException {
