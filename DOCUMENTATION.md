@@ -4,6 +4,8 @@
 [Machine Learning Algorithm](#algo) describes applied features, the algorithm itself, as well as its [Training](#train) and [Application](#app).
 `pld_classifier_trainer.py` trains a new instance, whereas `evaluation.py` performs an evaluation using unlabeled data.
 
+According to the evaluation script `Eval.java`, the trained classifier reaches an accuracy of 0.6818182.
+
 ## <a id="data">Data Retrieval</a>
 
 `data_retriever.py` retrieves aggregated tweets which mention PLDs from a given CSV-file, mainly focusing on sentiments and hashtags.
