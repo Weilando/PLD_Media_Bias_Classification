@@ -20,7 +20,7 @@ For example, the PLD of 'www.example.com' is 'example.com'.
 
 
 ## Timeline: 
-We will release the test set and evaluation script on **16.06., 11am** CEST time zone.  
+We will release the test set and evaluation script on **16.06., 11am** CEST time zone. You can run the evaluation script using gradle: ```gradle run```  
 Provide the source code and generated output via your Git repository **by 19.06., 3:00pm** CEST time zone.  
 Present your solution (approach, results) to the class during the DKE2021 lecture on **29.06.2021** (detailed arrangements about presentations will be announced later in the lecture).
 
