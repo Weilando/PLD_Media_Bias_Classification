@@ -1,0 +1,21 @@
+plugins {
+    id "application"
+}
+
+apply plugin: 'java'
+ext {
+    javaMainClass = "Eval"
+}
+
+application {
+    mainClassName = javaMainClass
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+        implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+}
+
