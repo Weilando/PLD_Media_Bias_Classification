@@ -3,12 +3,12 @@ Evaluates a classifier for the PLDs of referenced URLs according to their
 political leaning, i.e., left or right.
 Writes results as tuples (PLD, confidence score) into two separate CSV-files.
 
-Example call: python -m evaluation 'leaning_guesser' '../../../input_data/test_tweets.csv' '../../../output_data/left_tweets.csv' '../../../output_data/right_tweets.csv' -v
+Example call:
+python -m evaluation 'leaning_guesser' '../../../input_data/test_tweets.csv' '../../../output_data/left.csv' '../../../output_data/right.csv' -v
 """
 
 import numpy as np
 import sys
-import torch
 from argparse import ArgumentParser
 from torchtext.data.utils import get_tokenizer
 
@@ -18,6 +18,8 @@ from data_preprocessor import append_cnts_to_emos, build_dataloader, \
                               preprocess_cnts, preprocess_emos, preprocess_tags
 from helpers import plot_acc_and_loss, print_log
 from pld_dataset import PLDDataset
+
+# Evaluation
 
 def apply_classifier(classifier, test_ldr):
     """ Performs a forward pass with 'classifier' per sample from 'test_ldr'.

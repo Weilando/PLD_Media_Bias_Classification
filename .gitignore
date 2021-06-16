@@ -6,9 +6,8 @@ build/
 *.DS_Store
 
 # Generated training data and pretrained word embeddings
+/input_data/*_tweets.csv
 *.vector_cache
-/input_data/left_tweets.csv
-/input_data/right_tweets.csv
 
 # Saved PyTorch models and training metrics
 *.pt

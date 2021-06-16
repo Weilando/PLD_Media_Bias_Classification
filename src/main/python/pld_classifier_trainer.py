@@ -2,7 +2,8 @@
 Trains a classifier for the PLDs of referenced URLs according to their
 political leaning, i.e., left or right.
 
-Example call: python -m pld_classifier_trainer 'leaning_guesser' '../../../input_data/left_tweets.csv' '../../../input_data/right_tweets.csv' -b 30 -l 0.01 -e 12 -v
+Example call:
+python -m pld_classifier_trainer 'leaning_guesser' '../../../input_data/left_tweets.csv' '../../../input_data/right_tweets.csv' -b 30 -l 0.01 -e 12 -v
 """
 
 import numpy as np

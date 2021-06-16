@@ -12,7 +12,7 @@ def generate_tweets_path(rel_path):
     """ Generates a relative path for a CSV-file with fetched tweets.
     'rel_path' refers to a CSV-file with names of PLDs. """
     assert is_valid_pld_path(rel_path)
-    return rel_path.replace('_train.csv', '_tweets.csv')
+    return rel_path.replace('.csv', '_tweets.csv')
 
 def generate_model_file_names(model_name):
     """ Generates the PT-file names for the state_dict and vocab from
@@ -24,9 +24,9 @@ def generate_hists_file_name(model_name):
     return f"{model_name}_hists.npz"
 
 def is_valid_pld_path(rel_path):
-    """ Checks if 'rel_path' exists and if its suffix is '-_train.csv'. """
+    """ Checks if 'rel_path' exists and if its suffix is '.csv'. """
     abs_path = os.path.join(os.getcwd(), rel_path)
-    return os.path.exists(abs_path) and abs_path.endswith('_train.csv')
+    return os.path.exists(abs_path) and abs_path.endswith('.csv')
 
 # Reader
 
